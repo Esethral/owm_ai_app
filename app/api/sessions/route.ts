@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const { startup_name, industry, target_audience, creator_requirements } = body;
 
     if (!startup_name || !industry || !target_audience || !creator_requirements) {
-      return Response.json({ error: 'All fields are required' }, { status: 400 });
+      return Response.json({ error: 'Don\'t forget to fill in all the blanks!' }, { status: 400 });
     }
 
     const creators = await generateCreatorMatches(
@@ -42,6 +42,6 @@ export async function POST(request: NextRequest) {
     return Response.json(session, { status: 201 });
   } catch (err) {
     console.error('POST /api/sessions error:', err);
-    return Response.json({ error: 'Failed to create session' }, { status: 500 });
+    return Response.json({ error: 'Failed to create a session... Let\'s try again!' }, { status: 500 });
   }
 }
