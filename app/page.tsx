@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -30,7 +30,7 @@ export default function HomePage() {
   const [open, setOpen] = useState(false);
 
   // Home page and pre loading states and variables
-  // Drives the chevron: idle-closed → opening → idle-open → closing → idle-closed
+  // Chevron indicator states on main button
   type ChevronStatus = 'idle-closed' | 'opening' | 'idle-open' | 'closing';
   const [chevronStatus, setChevronStatus] = useState<ChevronStatus>('idle-closed');
   const transitionMs = 300;
@@ -46,6 +46,8 @@ export default function HomePage() {
   const sessionIdRef = useRef<string | null>(null);
   const pendingNavRef = useRef(false);
   const matchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const andyVisibleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const andyAnimatingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   type BubblePhase = 'hidden' | 'entering' | 'paused' | 'exiting';
   const [bubbleText, setBubbleText] = useState('');
   const [bubblePhase, setBubblePhase] = useState<BubblePhase>('hidden');
@@ -124,6 +126,27 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, [andyAnimating]);
 
+  // Speech bubble text transition
+  // useLayoutEffect fires synchronously before paint, ensuring opacity:0 is
+  // committed to the DOM before the RAF requests opacity:1 — giving CSS
+  // transition a real "before" state to animate from in both directions.
+  type SpeechBubbleState = 'idle' | 'match' | 'error';
+  const [shownBubble, setShownBubble] = useState<SpeechBubbleState>('idle');
+  const [bubbleVisible, setBubbleVisible] = useState(true);
+  const targetBubble: SpeechBubbleState = error ? 'error' : showMatchButton ? 'match' : 'idle';
+  const bubbleFirstRun = useRef(true);
+  useLayoutEffect(() => {
+    if (bubbleFirstRun.current) { bubbleFirstRun.current = false; return; }
+    const raf = requestAnimationFrame(() => setBubbleVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, [shownBubble]);
+  useEffect(() => {
+    if (shownBubble === targetBubble) return;
+    setBubbleVisible(false);
+    const t = setTimeout(() => setShownBubble(targetBubble), 180);
+    return () => clearTimeout(t);
+  }, [targetBubble]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -141,15 +164,18 @@ export default function HomePage() {
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setError('');
+    const updated = { ...form, [e.target.name]: e.target.value };
+    setForm(updated);
+    if (error && updated.startup_name && updated.industry && updated.target_audience && updated.creator_requirements) {
+      setError('');
+    }
   }
 
   // Submit button to start loading animation and sequence
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     if (!form.startup_name || !form.industry || !form.target_audience || !form.creator_requirements) {
-      setError('All fields are required.');
+      setError('Don\'t forget to fill in all the blanks!');
       return;
     }
     const controller = new AbortController();
@@ -159,13 +185,13 @@ export default function HomePage() {
     setLoading(true);
     setShowMatchButton(false);
     setError('');
-    setTimeout(() => setAndyVisible(true), slideMs);
-    setTimeout(() => {
+    andyVisibleTimerRef.current = setTimeout(() => setAndyVisible(true), slideMs);
+    andyAnimatingTimerRef.current = setTimeout(() => {
       setAndyAnimating(true);
       matchTimerRef.current = setTimeout(() => {
         setAndyAnimating(false);
         setShowMatchButton(true);
-      }, 1500);
+      }, 10000);
     }, slideMs + 500);
     // Post JSON
     try {
@@ -202,7 +228,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-6 overflow-hidden">
+    <div className="relative h-[calc(100vh-56px)] overflow-hidden px-6">
 
       {/* Floating speech bubbles behind Andy, slide left to right */}
       <div
@@ -274,12 +300,35 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Main page content */}
-      <div className={`flex flex-col items-center gap-5${(loading && showMatchButton) ? ' pointer-events-none' : ''}`} ref={dropdownRef}>
+      {/* OWM Branding */}
+      <div
+        className="absolute inset-x-0 top-0 flex items-center justify-center pointer-events-none transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{ height: 'calc((100vh - 56px) / 3)', transform: loading ? 'translateX(150vw)' : open ? 'translateY(0)' : 'translateY(8vh)' }}
+      >
+        <h1
+          className="text-[clamp(4rem,14vh,11rem)] font-black text-white leading-none select-none"
+          style={{ fontFamily: 'var(--font-geist-sans)', letterSpacing: '0.3em', paddingLeft: '0.3em' }}
+        >
+          OWM
+        </h1>
+      </div>
+
+      {/* Main page area for buttons and form input */}
+      <div
+        className={`absolute inset-x-0 flex flex-col items-center${(loading && showMatchButton) ? ' pointer-events-none' : ''}`}
+        ref={dropdownRef}
+        style={{
+          top: 'calc((100vh - 56px) / 3)',
+          bottom: 'calc(12vh + 52px)',
+          zIndex: loading ? 20 : undefined,
+        }}
+      >
+        {/* Push Find Your Match button towards bottom of screen */}
+        <div className="flex-1 min-h-0" />
 
         {/* Find Your Match button —> slides fully off screen right */}
         <div
-          className="transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+          className="flex-shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
           style={{ transform: loading ? 'translateX(150vw)' : 'translateX(0)' }}
         >
           <button
@@ -323,32 +372,37 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* Dropdown form —> slides right but stays on screen */}
+        {/* Dropdown form —> slides right but stays on screen during loading*/}
         <div
-          className="w-[480px] max-w-[calc(100vw-3rem)] grid transition-[grid-template-rows,transform] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+          className="flex-shrink-0 w-[480px] max-w-[calc(100vw-3rem)] grid transition-[grid-template-rows,transform] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
           style={{
             gridTemplateRows: open ? '1fr' : '0fr',
-            transform: slidingOut ? 'translateX(150vw)' : loading ? 'translateX(calc(50vw - 50% - 24px))' : 'translateX(0)',
+            transform: slidingOut ? 'translateX(150vw)' : showMatchButton ? 'translateX(150vw)' : loading ? 'translateX(calc(50vw - 50% - 1.5rem))' : 'translateX(0)',
           }}
         >
           <div className="overflow-hidden pt-3">
             <div className="rounded-2xl bg-[#13131f] border border-[#252540] shadow-[0_32px_80px_rgba(0,0,0,0.6)] overflow-hidden">
-              {/* Card header */}
-              <div className="px-4 pt-4 pb-4 border-b border-[#1e1e35] flex items-center gap-3">
+              {/* Form Input Header */}
+              <div className="px-4 py-2 border-b border-[#1e1e35] flex items-center gap-3">
                 {/* Andy avatar */}
                 <span className="relative flex h-10 w-10 shrink-0">
                   <Image src="/images/Andy.png" alt="Andy" width={40} height={40} className="rounded-full object-cover" />
                   <span className="absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full bg-[#10b981] border-2 border-[#13131f]" />
                 </span>
-                {/* Speech bubble */}
-                <div className="relative bg-[#1a1a2e] border border-[#252540] rounded-2xl rounded-tl-sm px-4 py-2.5">
-                  <span className="absolute -left-[7px] top-3 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[7px] border-r-[#252540]" />
-                  <span className="absolute -left-[6px] top-3 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[7px] border-r-[#1a1a2e]" />
-                  <p className="text-sm font-medium text-[#f0f0ff]">Hey, I&apos;m Andy! Give me the full story!</p>
+                {/* Andy's speech bubble */}
+                <div className={`relative rounded-2xl rounded-tl-sm px-4 py-2.5 border ${shownBubble === 'error' ? 'bg-[#1a0a0e] border-[#f43f5e]/40' : 'bg-[#1a1a2e] border-[#252540]'}`}>
+                  <span className={`absolute -left-[7px] top-3 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[7px] ${shownBubble === 'error' ? 'border-r-[#f43f5e]/40' : 'border-r-[#252540]'}`} />
+                  <span className={`absolute -left-[6px] top-3 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[7px] ${shownBubble === 'error' ? 'border-r-[#1a0a0e]' : 'border-r-[#1a1a2e]'}`} />
+                  <p
+                    className={`text-sm font-medium ${shownBubble === 'error' ? 'text-[#f43f5e]' : 'text-[#f0f0ff]'}`}
+                    style={{ opacity: bubbleVisible ? 1 : 0, transform: bubbleVisible ? 'translateY(0)' : 'translateY(-5px)', transition: 'opacity 0.18s ease, transform 0.18s ease' }}
+                  >
+                    {shownBubble === 'error' ? error : shownBubble === 'match' ? 'Sweet story! Let me see what I can find...' : 'Hey, I\'m Andy! Give me the full story!'}
+                  </p>
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="p-3 space-y-2">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label htmlFor="startup_name" className="block text-xs font-medium text-[#5a5a7a] uppercase tracking-wider">
@@ -361,7 +415,7 @@ export default function HomePage() {
                       placeholder="Forma Health"
                       value={form.startup_name}
                       onChange={handleChange}
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm"
+                      className="w-full px-3.5 py-2 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -375,7 +429,7 @@ export default function HomePage() {
                       placeholder="Women's health tech"
                       value={form.industry}
                       onChange={handleChange}
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm"
+                      className="w-full px-3.5 py-2 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm"
                     />
                   </div>
                 </div>
@@ -391,7 +445,7 @@ export default function HomePage() {
                     placeholder="e.g. Women 28–42 managing chronic stress"
                     value={form.target_audience}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm"
+                    className="w-full px-3.5 py-2 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm"
                   />
                 </div>
 
@@ -402,20 +456,13 @@ export default function HomePage() {
                   <textarea
                     id="creator_requirements"
                     name="creator_requirements"
-                    rows={3}
+                    rows={2}
                     placeholder="e.g. Someone covering mental health and productivity, ideally with a newsletter presence."
                     value={form.creator_requirements}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm resize-none leading-relaxed"
+                    className="w-full px-3.5 py-2 rounded-lg bg-[#0c0c14] border border-[#252540] text-[#f0f0ff] placeholder:text-[#3a3a58] focus:border-[#6366f1] focus:bg-[#0e0e1a] focus:ring-1 focus:ring-[#6366f1]/30 outline-none transition-all text-sm resize-none leading-relaxed"
                   />
                 </div>
-
-                {error && (
-                  <p className="text-xs text-[#f43f5e] bg-[#f43f5e]/8 border border-[#f43f5e]/20 px-3 py-2.5 rounded-lg flex items-center gap-2">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    {error}
-                  </p>
-                )}
 
                 {/* Transform initial input form box when clicking submit to transition it to the loading screen */}
                 <div className="pt-1">
@@ -423,6 +470,8 @@ export default function HomePage() {
                     type={loading ? 'button' : 'submit'}
                     onClick={loading ? () => {
                       abortRef.current?.abort();
+                      if (andyVisibleTimerRef.current) clearTimeout(andyVisibleTimerRef.current);
+                      if (andyAnimatingTimerRef.current) clearTimeout(andyAnimatingTimerRef.current);
                       if (matchTimerRef.current) clearTimeout(matchTimerRef.current);
                       sessionIdRef.current = null;
                       pendingNavRef.current = false;
@@ -463,20 +512,21 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* View Previous Matches button —> slides fully off screen right */}
-        <div
-          className="transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
-          style={{ transform: loading ? 'translateX(150vw)' : 'translateX(0)' }}
-        >
-          <Link
-            href="/dashboard"
-            className="px-10 py-3 rounded-full border border-[#252540] hover:border-[#363660] text-[#9898b8] hover:text-[#f0f0ff] text-sm font-medium transition-all"
-          >
-            View Previous Matches
-          </Link>
-        </div>
-
       </div>
+
+      {/* View Previous Matches button, aligned to bottom */}
+      <div
+        className="absolute inset-x-0 flex justify-center transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{ bottom: '5vh', transform: loading ? 'translateX(150vw)' : open ? 'translateY(0)' : 'translateY(-7vh)', zIndex: loading ? 20 : undefined }}
+      >
+        <Link
+          href="/dashboard"
+          className="px-10 py-3 rounded-full border border-[#252540] hover:border-[#363660] text-[#9898b8] hover:text-[#f0f0ff] text-sm font-medium transition-all"
+        >
+          View Previous Matches
+        </Link>
+      </div>
+
     </div>
   );
 }
