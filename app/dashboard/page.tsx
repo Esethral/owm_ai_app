@@ -16,13 +16,6 @@ export default function DashboardPage() {
               : `${sessions.length} session${sessions.length !== 1 ? 's' : ''}`}
           </p>
         </div>
-        <Link
-          href="/"
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-sm font-medium transition-colors"
-        >
-          <span>+</span>
-          New match
-        </Link>
       </div>
 
       {sessions.length === 0 ? (
