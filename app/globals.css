@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Global styling theme */
 @theme inline {
   --color-background: #0c0c14;
   --color-surface: #13131f;
@@ -25,10 +26,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Have elements use consistent box-sizing */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
+/* Set HTML variables */
 html {
   background: #0c0c14;
   color: #f0f0ff;
@@ -36,13 +39,14 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Set screen variables */
 body {
   min-height: 100vh;
   background: #0c0c14;
   color: #f0f0ff;
 }
 
-/* Andy loading animation - Pulse once, then 360 spin, repeat */
+/* Andy loading animation -> Pulse once, then 360 spin, repeat */
 @keyframes andy-loading {
   0%   { transform: scale(1)    rotate(0deg);   }
   12%  { transform: scale(1.12) rotate(0deg);   }
@@ -60,6 +64,16 @@ body {
 @keyframes bob-up {
   0%, 100% { transform: rotate(180deg) translateY(0px); }
   50%       { transform: rotate(180deg) translateY(-4px); }
+}
+
+/* INFLUENCE FOR EQUITY background moving slogan */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
 }
 
 /* Scrollbar */
