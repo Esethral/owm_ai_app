@@ -3,7 +3,7 @@
 > AI-powered creator matching for founders. Describe your startup and Andy finds the creators who can move your audience.
 
 **Live demo:** https://owm-ai-andy.vercel.app/
-**Walkthrough:** https://loom.com/share/placeholder
+**Walkthrough:** [https://loom.com/share/placeholder](https://www.loom.com/share/70c7d9f04d484d7bb6e05f2f0bbdefe5)
 
 ---
 
