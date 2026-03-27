@@ -1,38 +1,41 @@
-// 'use client';
+import { notFound } from 'next/navigation';
+import { getSession } from '@/lib/db';
+import { CREATOR_BASES, PERSON_IMAGES } from '@/lib/fakeCreators';
+import MatchesReveal, { TileData } from './MatchesReveal';
 
-// import { useEffect, useState } from 'react';
-// import Image from 'next/image';
+// This page calls the database to populate all necessary fields and data based on a session ID
+// Then passes it to the browser to immediately render
+export default async function MatchPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const session = getSession(id);
+  if (!session) notFound();
 
-// export default function MatchesPage() {
-//   const [bubbleVisible, setBubbleVisible] = useState(false);
+  const ratings = session.creator_ratings ?? {};
 
-//   useEffect(() => {
-//     const t = setTimeout(() => setBubbleVisible(true), 100);
-//     return () => clearTimeout(t);
-//   }, []);
+  const tiles: TileData[] = [...PERSON_IMAGES]
+    .map((src) => {
+      const base = CREATOR_BASES[src];
+      const rating = ratings[src];
+      const creator = rating
+        ? { ...base, name: rating.name, age: rating.age, handle: rating.handle, platforms: rating.platforms, niche: rating.niche, audience: rating.audience }
+        : { ...base, name: '', age: 0, handle: '', platforms: [], niche: '', audience: '' };
+      return {
+        src,
+        creator,
+        matchPercent: rating?.matchPercent,
+        reason: rating?.reason,
+      };
+    })
+    .sort((a, b) => (b.matchPercent ?? 0) - (a.matchPercent ?? 0));
 
-//   return (
-//     <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-6 overflow-hidden">
-//       <div className="flex flex-col items-center gap-5">
-//         <Image
-//           src="/images/Andy.png"
-//           alt="Andy"
-//           width={160}
-//           height={160}
-//           className="rounded-full shadow-[0_0_60px_rgba(99,102,241,0.3)]"
-//         />
-//         <div
-//           className="relative bg-[#1a1a2e] border border-[#252540] rounded-2xl rounded-tl-sm px-5 py-3 mt-4"
-//           style={{
-//             transform: bubbleVisible ? 'translateX(0)' : 'translateX(-120vw)',
-//             transition: 'transform 0.6s cubic-bezier(0.4,0,0.2,1)',
-//           }}
-//         >
-//           <span className="absolute -top-[7px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[7px] border-b-[#252540]" />
-//           <span className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[7px] border-b-[#1a1a2e]" />
-//           <p className="text-[#f0f0ff] text-lg font-medium">It worked!</p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+  return (
+    <MatchesReveal
+      tiles={tiles}
+      startupName={session.startup_name}
+      industry={session.industry}
+      targetAudience={session.target_audience}
+      creatorRequirements={session.creator_requirements}
+      createdAt={session.created_at}
+    />
+  );
+}
