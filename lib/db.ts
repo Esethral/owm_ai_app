@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-// Flat JSON database stored at the project root.
-const DB_PATH = path.join(process.cwd(), 'data.json');
+// Flat JSON database — /tmp is the only writable directory on Vercel serverless functions
+const DB_PATH = process.env.NODE_ENV === 'production'
+  ? '/tmp/data.json'
+  : path.join(process.cwd(), 'data.json');
 
 // All the fields a creator card will have, populated by Andy
 export type Creator = {
