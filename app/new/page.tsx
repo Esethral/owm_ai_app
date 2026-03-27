@@ -22,7 +22,7 @@ export default function HomePage() {
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     if (!form.startup_name || !form.industry || !form.target_audience || !form.creator_requirements) {
-      setError('All fields are required.');
+      setError('Don\'t forget to fill in all the blanks!');
       return;
     }
 
