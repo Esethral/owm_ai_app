@@ -1,6 +1,6 @@
 # Andy — Creator Match by OWM
 
-> AI-powered creator matching for founders. Describe your startup; Andy finds the creators who can move your audience.
+> AI-powered creator matching for founders. Describe your startup and Andy finds the creators who can move your audience.
 
 **Live URL:** _Add your Vercel URL here after deployment_
 
