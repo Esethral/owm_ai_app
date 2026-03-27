@@ -40,5 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# SQLite database (local data only — use Vercel Postgres or similar in production)
-data.db
+# JSON data store (local data only)
+data.json
