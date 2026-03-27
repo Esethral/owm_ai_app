@@ -34,33 +34,39 @@ export type FakeCreator = CreatorBase & {
   name: string;
   age: number;
   handle: string;
-  platforms: string[];
+  platform: string;
+  secondary_platform?: string;
+  tertiary_platform?: string;
   niche: string;
+  secondary_niche?: string;
+  tertiary_niche?: string;
   audience: string;
+  one_liner?: string;
+  why_fit?: string;
 };
 
 // JSON structure for loosley created creator profiles. Just a basic setup to get Andy started on generating those fictional creators
 export const CREATOR_BASES: Record<string, CreatorBase> = {
-  '/images/person_1.jpeg':  {ageRange: '25-30', ethnicity: 'african',    gender: 'male'     },
-  '/images/person_2.jpg':   {ageRange: '22-27', ethnicity: 'caucasian',  gender: 'male'     },
-  '/images/person_3.jpeg':  {ageRange: '29-34', ethnicity: 'caucasian',  gender: 'male'     },
-  '/images/person_4.jpeg':  {ageRange: '31-37', ethnicity: 'caucasian',  gender: 'male'     },
-  '/images/person_5.jpeg':  {ageRange: '26-32', ethnicity: 'latino',     gender: 'male'     },
-  '/images/person_6.jpeg':  {ageRange: '23-29', ethnicity: 'caucasian',  gender: 'female'   },
-  '/images/person_7.jpeg':  {ageRange: '25-31', ethnicity: 'indian',     gender: 'female'   },
-  '/images/person_8.jpeg':  {ageRange: '27-33', ethnicity: 'caucasian',  gender: 'female'   },
-  '/images/person_9.jpeg':  {ageRange: '21-26', ethnicity: 'african',    gender: 'female'   },
-  '/images/person_10.avif': {ageRange: '48-56', ethnicity: 'caucasian',  gender: 'female'   },
-  '/images/person_11.jpg':  {ageRange: '26-32', ethnicity: 'arab',       gender: 'male'     },
-  '/images/person_12.webp': {ageRange: '25-31', ethnicity: 'japanese',   gender: 'male'     },
-  '/images/person_13.jpg':  {ageRange: '22-28', ethnicity: 'chinese',    gender: 'male'     },
-  '/images/person_14.avif': {ageRange: '27-34', ethnicity: 'african',    gender: 'male'     },
-  '/images/person_15.jpg':  {ageRange: '26-32', ethnicity: 'arab',       gender: 'female'   },
-  '/images/person_16.jpg':  {ageRange: '21-27', ethnicity: 'asian',      gender: 'female'   },
-  '/images/person_17.jpg':  {ageRange: '20-25', ethnicity: 'african',    gender: 'female'   },
-  '/images/person_18.webp': {ageRange: '30-55', ethnicity: 'caucasian',  gender: 'couple'   },
-  '/images/person_19.jpeg': {ageRange: '18-23', ethnicity: 'caucasian',  gender: 'nonbinary'},
-  '/images/person_20.webp': {ageRange: '21-27', ethnicity: 'african',    gender: 'nonbinary'},
+  '/images/person_1.jpeg':  {ageRange: '22-32', ethnicity: 'african',    gender: 'male'     },
+  '/images/person_2.jpg':   {ageRange: '20-30', ethnicity: 'caucasian',  gender: 'male'     },
+  '/images/person_3.jpeg':  {ageRange: '27-38', ethnicity: 'caucasian',  gender: 'male'     },
+  '/images/person_4.jpeg':  {ageRange: '29-40', ethnicity: 'caucasian',  gender: 'male'     },
+  '/images/person_5.jpeg':  {ageRange: '23-34', ethnicity: 'latino',     gender: 'male'     },
+  '/images/person_6.jpeg':  {ageRange: '21-32', ethnicity: 'caucasian',  gender: 'female'   },
+  '/images/person_7.jpeg':  {ageRange: '23-34', ethnicity: 'indian',     gender: 'female'   },
+  '/images/person_8.jpeg':  {ageRange: '25-36', ethnicity: 'caucasian',  gender: 'female'   },
+  '/images/person_9.jpeg':  {ageRange: '19-30', ethnicity: 'african',    gender: 'female'   },
+  '/images/person_10.avif': {ageRange: '44-58', ethnicity: 'caucasian',  gender: 'female'   },
+  '/images/person_11.jpg':  {ageRange: '24-35', ethnicity: 'arab',       gender: 'male'     },
+  '/images/person_12.webp': {ageRange: '23-34', ethnicity: 'japanese',   gender: 'male'     },
+  '/images/person_13.jpg':  {ageRange: '20-31', ethnicity: 'chinese',    gender: 'male'     },
+  '/images/person_14.avif': {ageRange: '25-36', ethnicity: 'african',    gender: 'male'     },
+  '/images/person_15.jpg':  {ageRange: '24-35', ethnicity: 'arab',       gender: 'female'   },
+  '/images/person_16.jpg':  {ageRange: '19-30', ethnicity: 'asian',      gender: 'female'   },
+  '/images/person_17.jpg':  {ageRange: '18-29', ethnicity: 'african',    gender: 'female'   },
+  '/images/person_18.webp': {ageRange: '28-55', ethnicity: 'caucasian',  gender: 'couple'   },
+  '/images/person_19.jpeg': {ageRange: '18-29', ethnicity: 'caucasian',  gender: 'nonbinary'},
+  '/images/person_20.webp': {ageRange: '19-30', ethnicity: 'african',    gender: 'nonbinary'},
 };
 
 const PLATFORM_COLORS: Record<string, string> = {

@@ -23,12 +23,18 @@ export type CreatorRating = {
   // How good of a match and why, determined by Andy
   matchPercent: number;
   reason: string;
+  one_liner: string;
+  why_fit: string;
   // Profile fields Andy generates
   name: string;
   age: number;
   handle: string;
-  platforms: string[];
+  platform: string;
+  secondary_platform?: string;
+  tertiary_platform?: string;
   niche: string;
+  secondary_niche?: string;
+  tertiary_niche?: string;
   audience: string;
 };
 

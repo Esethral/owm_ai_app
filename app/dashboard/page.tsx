@@ -51,11 +51,17 @@ export default async function DashboardPage({
               name: topRating.name,
               age: topRating.age,
               handle: topRating.handle,
-              platforms: topRating.platforms,
+              platform: topRating.platform,
+              ...(topRating.secondary_platform ? { secondary_platform: topRating.secondary_platform } : {}),
+              ...(topRating.tertiary_platform ? { tertiary_platform: topRating.tertiary_platform } : {}),
               niche: topRating.niche,
+              ...(topRating.secondary_niche ? { secondary_niche: topRating.secondary_niche } : {}),
+              ...(topRating.tertiary_niche ? { tertiary_niche: topRating.tertiary_niche } : {}),
               audience: topRating.audience,
               matchPercent: topRating.matchPercent,
               reason: topRating.reason,
+              one_liner: topRating.one_liner,
+              why_fit: topRating.why_fit,
             } : null;
 
             return {

@@ -215,8 +215,8 @@ export default function MatchesReveal({ tiles, startupName, industry, targetAudi
             }}
           >
             <CreatorTile
-              image={src} creator={creator} matchPercent={matchPercent}
-              reason={reason} sizes="25vw"
+              image={src} creator={creator} matchPercent={matchPercent ?? 0}
+              reason={reason} sizes="25vw" showWhy
               onClick={() => setSelected({ src, creator, matchPercent, reason })}
             />
           </div>
@@ -236,7 +236,7 @@ export default function MatchesReveal({ tiles, startupName, industry, targetAudi
               }}
             >
               <CreatorTile
-                image={src} creator={creator} matchPercent={matchPercent}
+                image={src} creator={creator} matchPercent={matchPercent ?? 0}
                 reason={reason} sizes="33vw"
                 onClick={() => setSelected({ src, creator, matchPercent, reason })}
               />
@@ -310,7 +310,7 @@ export default function MatchesReveal({ tiles, startupName, industry, targetAudi
                   }}
                 >
                   <CreatorTile
-                    image={src} creator={creator} matchPercent={matchPercent}
+                    image={src} creator={creator} matchPercent={matchPercent ?? 0}
                     reason={reason} sizes="33vw"
                     onClick={() => setSelected({ src, creator, matchPercent, reason })}
                   />
@@ -388,17 +388,17 @@ export default function MatchesReveal({ tiles, startupName, industry, targetAudi
           onClick={closeModal}
         >
           <div
-            className="relative flex w-full max-w-3xl rounded-3xl overflow-hidden border border-[#1e1e35] bg-[#0f0f1c] shadow-[0_32px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(99,102,241,0.12)]"
+            className="relative flex w-full max-w-5xl rounded-3xl overflow-hidden border border-[#1e1e35] bg-[#0f0f1c] shadow-[0_32px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(99,102,241,0.12)]"
             style={{
-              maxHeight: '85vh',
+              maxHeight: '88vh',
               opacity: modalVisible ? 1 : 0,
               transform: modalVisible ? 'scale(1) translateY(0)' : 'scale(0.94) translateY(16px)',
               transition: 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1)',
             }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Profile picture - left 40% */}
-            <div className="relative flex-shrink-0" style={{ width: '40%' }}>
+            {/* Profile picture - left 45% */}
+            <div className="relative flex-shrink-0" style={{ width: '45%' }}>
               <Image
                 src={selected.src}
                 alt={`${selected.creator.name} ${selected.creator.handle}`}
@@ -424,18 +424,18 @@ export default function MatchesReveal({ tiles, startupName, industry, targetAudi
 
               {/* Social Media Platforms */}
               <div className="flex flex-col gap-1.5">
-                {selected.creator.platforms.map((p) => (
+                {[selected.creator.platform, selected.creator.secondary_platform, selected.creator.tertiary_platform].filter(Boolean).map((p) => (
                   <div key={p} className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: platformColor(p) }} />
-                    <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: platformColor(p) }}>{p}</span>
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: platformColor(p!) }} />
+                    <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: platformColor(p!) }}>{p}</span>
                     <a
-                      href={platformUrl(p, selected.creator.handle)}
+                      href={platformUrl(p!, selected.creator.handle)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-[#5a5a7a] hover:text-[#9898b8] underline underline-offset-2 transition-colors"
                       onClick={e => e.stopPropagation()}
                     >
-                      {platformUrl(p, selected.creator.handle).replace('https://www.', '').replace('https://', '')}
+                      {platformUrl(p!, selected.creator.handle).replace('https://www.', '').replace('https://', '')}
                     </a>
                   </div>
                 ))}
@@ -468,11 +468,19 @@ export default function MatchesReveal({ tiles, startupName, industry, targetAudi
                 </div>
               </div>
 
-              {/* Andy's reason/one-liner */}
-              {selected.reason && (
+              {/* Andy's one-liner */}
+              {(selected.creator.one_liner ?? selected.reason) && (
                 <div className="rounded-xl bg-[#0e0e20] border border-[#6366f1]/20 px-4 py-3">
                   <p className="text-[10px] text-[#6366f1] font-semibold uppercase tracking-widest mb-2">Andy&apos;s take</p>
-                  <p className="text-[#a5a5d0] text-sm leading-relaxed italic">&ldquo;{selected.reason}&rdquo;</p>
+                  <p className="text-[#a5a5d0] text-sm leading-relaxed italic">&ldquo;{selected.creator.one_liner ?? selected.reason}&rdquo;</p>
+                </div>
+              )}
+
+              {/* Why this creator */}
+              {selected.creator.why_fit && (
+                <div className="rounded-xl bg-[#13131f] border border-[#1e1e35] px-4 py-3">
+                  <p className="text-[10px] text-[#5a5a7a] font-semibold uppercase tracking-widest mb-2">Why this creator</p>
+                  <p className="text-[#c8c8e8] text-sm leading-relaxed">{selected.creator.why_fit}</p>
                 </div>
               )}
             </div>
