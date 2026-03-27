@@ -9,7 +9,7 @@ import { FakeCreator, platformColor, platformUrl } from '@/lib/fakeCreators';
 export interface TileData {
   src: string;
   creator: FakeCreator;
-  matchPercent?: number;
+  matchPercent: number;
   reason?: string;
 }
 
