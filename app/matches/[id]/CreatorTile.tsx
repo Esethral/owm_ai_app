@@ -141,16 +141,18 @@ export default function CreatorTile({ image, creator, matchPercent, reason, size
 
         {/* Andy's reason —> speech bubble */}
         {reason && (
-          <div className="flex items-start gap-2">
-            <div className="relative w-6 h-6 flex-shrink-0 mt-0.5">
-              <Image src="/images/Andy.png" alt="Andy" fill className="rounded-full object-cover" />
+          <SpeechTooltip text={reason}>
+            <div className="flex items-start gap-2 cursor-default">
+              <div className="relative w-6 h-6 flex-shrink-0 mt-0.5">
+                <Image src="/images/Andy.png" alt="Andy" fill className="rounded-full object-cover" />
+              </div>
+              <div className="relative rounded-xl rounded-tl-sm bg-[#1a1a2e] border border-[#252540] px-3 py-2 min-w-0">
+                <span className="absolute -left-[5px] top-[8px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#252540]" />
+                <span className="absolute -left-[4px] top-[8px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#1a1a2e]" />
+                <p className="text-xs text-[#9898b8] leading-snug line-clamp-2 italic">{reason}</p>
+              </div>
             </div>
-            <div className="relative rounded-xl rounded-tl-sm bg-[#1a1a2e] border border-[#252540] px-3 py-2 min-w-0">
-              <span className="absolute -left-[5px] top-[8px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#252540]" />
-              <span className="absolute -left-[4px] top-[8px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#1a1a2e]" />
-              <p className="text-xs text-[#9898b8] leading-snug line-clamp-2 italic">{reason}</p>
-            </div>
-          </div>
+          </SpeechTooltip>
         )}
 
         {/* Audience / Followers */}
