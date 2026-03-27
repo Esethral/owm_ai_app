@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 // Line drawn animated trash can
@@ -26,8 +25,7 @@ function TrashIcon({ open }: { open: boolean }) {
 }
 
 // Functions to handle delete and render button with confirmation state and loading state
-export default function DeleteButton({ sessionId }: { sessionId: string }) {
-  const router = useRouter();
+export default function DeleteButton({ onDelete }: { onDelete: () => Promise<void> }) {
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -40,8 +38,7 @@ export default function DeleteButton({ sessionId }: { sessionId: string }) {
 
     setDeleting(true);
     try {
-      await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' });
-      router.refresh();
+      await onDelete();
     } catch {
       setDeleting(false);
       setConfirming(false);

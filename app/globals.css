@@ -59,11 +59,11 @@ body {
 /* Chevron indicator animations */
 @keyframes bob-down {
   0%, 100% { transform: rotate(0deg) translateY(0px); }
-  50%       { transform: rotate(0deg) translateY(4px); }
+  50%       { transform: rotate(0deg) translateY(-4px); }
 }
 @keyframes bob-up {
   0%, 100% { transform: rotate(180deg) translateY(0px); }
-  50%       { transform: rotate(180deg) translateY(-4px); }
+  50%       { transform: rotate(180deg) translateY(4px); }
 }
 
 /* INFLUENCE FOR EQUITY background moving slogan */

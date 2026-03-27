@@ -29,6 +29,7 @@ interface Props {
   creator_requirements: string;
   created_at: string;
   topCreator: TopCreator | null;
+  onDelete: () => Promise<void>;
 }
 
 // Have percentage wheel fill up based on percentage amount
@@ -53,7 +54,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function DashboardCard({ id, startup_name, industry, target_audience, creator_requirements, created_at, topCreator }: Props) {
+export default function DashboardCard({ id, startup_name, industry, target_audience, creator_requirements, created_at, topCreator, onDelete }: Props) {
   // Initialize modals and states
   const [sessionModal, setSessionModal] = useState(false);
   const [sessionModalVisible, setSessionModalVisible] = useState(false);
@@ -125,15 +126,15 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
             className="flex items-center gap-3 flex-1 min-w-0 mx-2 cursor-pointer rounded-xl p-2 hover:bg-[#1a1a2e] active:bg-[#252540] transition-colors"
             onClick={() => setCreatorModal(true)}
           >
-            <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-[#252540] shrink-0">
-              <Image src={topCreator.imagePath} alt={`${topCreator.name} ${topCreator.handle}`} fill className="object-cover object-center" sizes="48px" />
+            <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#252540] shrink-0">
+              <Image src={topCreator.imagePath} alt={`${topCreator.name} ${topCreator.handle}`} fill className="object-cover object-center" sizes="64px" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-[#f0f0ff] truncate">{topCreator.name}</p>
-              <p className="text-xs text-[#5a5a7a] truncate">{topCreator.handle}</p>
+              <p className="text-base font-semibold text-[#f0f0ff] truncate">{topCreator.name}</p>
+              <p className="text-sm text-[#5a5a7a] truncate">{topCreator.handle}</p>
               {topCreator.reason && (
                 <SpeechTooltip text={topCreator.reason}>
-                  <p className="text-xs text-[#6366f1] italic truncate max-w-[260px] cursor-default">&ldquo;{topCreator.reason}&rdquo;</p>
+                  <p className="text-sm text-[#6366f1] italic truncate max-w-[260px] cursor-default">&ldquo;{topCreator.reason}&rdquo;</p>
                 </SpeechTooltip>
               )}
             </div>
@@ -152,7 +153,7 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
             </svg>
             View
           </Link>
-          <DeleteButton sessionId={id} />
+          <DeleteButton onDelete={onDelete} />
         </div>
       </div>
 
