@@ -418,8 +418,17 @@ function HomePageInner() {
             }}
           >
             <h1
-              className="font-black text-white leading-none select-none"
-              style={{ fontFamily: 'var(--font-geist-sans)', fontSize: 'clamp(4rem, min(22vw, 26vh), 24rem)', letterSpacing: '0.35em', paddingLeft: '0.35em' }}
+              className="font-black leading-none select-none"
+              style={{
+                fontFamily: 'var(--font-geist-sans)',
+                fontSize: 'clamp(4rem, min(22vw, 26vh), 24rem)',
+                letterSpacing: '0.28em',
+                paddingLeft: '0.28em',
+                background: 'linear-gradient(135deg, #ffffff 0%, #e0e0ff 45%, #a5b4fc 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
             >
               OWM
             </h1>
