@@ -85,16 +85,6 @@ export function createSession(session: Session): Session {
   return session;
 }
 
-// Update Creator Ratings for a specific session
-export function updateSessionRatings(id: string, ratings: Record<string, CreatorRating>): void {
-  const store = read();
-  const session = store.sessions.find((s) => s.id === id);
-  if (session) {
-    session.creator_ratings = ratings;
-    write(store);
-  }
-}
-
 // Remove a specific session
 export function deleteSession(id: string): boolean {
   const store = read();
