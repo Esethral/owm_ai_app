@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { listSessions } from '@/lib/db';
 import { CREATOR_BASES } from '@/lib/fakeCreators';
-import DashboardCard from './DashboardCard';
+import DashboardList, { type SessionCardData } from './DashboardList';
 
 // How many cards can be on screen before creating another page
 const PAGE_SIZE = 5;
@@ -38,45 +38,40 @@ export default async function DashboardPage({
         <EmptyState />
       ) : (
         <>
-          <div className="space-y-3">
-            {pageSessions.map((session) => {
-              const ratings = session.creator_ratings ?? {};
-              const topEntry = Object.entries(ratings).sort((a, b) => b[1].matchPercent - a[1].matchPercent)[0];
-              const topImagePath = topEntry?.[0];
-              const topRating = topEntry?.[1];
-              const topBase = topImagePath ? CREATOR_BASES[topImagePath] : null;
+          <DashboardList key={currentPage} sessions={pageSessions.map((session): SessionCardData => {
+            const ratings = session.creator_ratings ?? {};
+            const topEntry = Object.entries(ratings).sort((a, b) => b[1].matchPercent - a[1].matchPercent)[0];
+            const topImagePath = topEntry?.[0];
+            const topRating = topEntry?.[1];
+            const topBase = topImagePath ? CREATOR_BASES[topImagePath] : null;
 
-              // If there is a top creator, build out their creator card
-              const topCreator = topBase && topRating && topImagePath ? {
-                imagePath: topImagePath,
-                name: topRating.name,
-                age: topRating.age,
-                handle: topRating.handle,
-                platforms: topRating.platforms,
-                niche: topRating.niche,
-                audience: topRating.audience,
-                matchPercent: topRating.matchPercent,
-                reason: topRating.reason,
-              } : null;
+            // If there is a top creator, build out their creator card
+            const topCreator = topBase && topRating && topImagePath ? {
+              imagePath: topImagePath,
+              name: topRating.name,
+              age: topRating.age,
+              handle: topRating.handle,
+              platforms: topRating.platforms,
+              niche: topRating.niche,
+              audience: topRating.audience,
+              matchPercent: topRating.matchPercent,
+              reason: topRating.reason,
+            } : null;
 
-              return (
-                <DashboardCard
-                  key={session.id}
-                  id={session.id}
-                  startup_name={session.startup_name}
-                  industry={session.industry}
-                  target_audience={session.target_audience}
-                  creator_requirements={session.creator_requirements}
-                  created_at={session.created_at}
-                  topCreator={topCreator}
-                />
-              );
-            })}
-          </div>
+            return {
+              id: session.id,
+              startup_name: session.startup_name,
+              industry: session.industry,
+              target_audience: session.target_audience,
+              creator_requirements: session.creator_requirements,
+              created_at: session.created_at,
+              topCreator,
+            };
+          })} />
 
           {/* Pagination arrows */}
           {totalPages > 1 && (
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+            <div className="flex items-center justify-center gap-3 mt-8 pb-4">
               {currentPage > 1 ? (
                 <Link
                   href={`/dashboard?page=${currentPage - 1}`}
