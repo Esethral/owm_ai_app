@@ -12,6 +12,7 @@ interface Props {
   matchPercent: number;
   reason?: string;
   sizes?: string;
+  showWhy?: boolean;
   onClick?: () => void;
 }
 
@@ -51,7 +52,7 @@ function MatchRing({ pct }: { pct: number }) {
   );
 }
 
-export default function CreatorTile({ image, creator, matchPercent, reason, sizes = '25vw', onClick }: Props) {
+export default function CreatorTile({ image, creator, matchPercent, reason, sizes = '25vw', showWhy = false, onClick }: Props) {
   // Variables for 3D Tile effect - tile / glare position
   const tileRef = useRef<HTMLDivElement>(null);
   const glareRef = useRef<HTMLDivElement>(null);
@@ -89,9 +90,6 @@ export default function CreatorTile({ image, creator, matchPercent, reason, size
     if (glare) glare.style.opacity = '0';
   }
 
-  // Set social media platform
-  const primaryPlatform = creator.platforms[0] ?? '';
-  const color = platformColor(primaryPlatform);
 
   // Return the fully compiled creator card
   return (
@@ -115,13 +113,13 @@ export default function CreatorTile({ image, creator, matchPercent, reason, size
       </div>
 
       {/* Content — right half */}
-      <div className="flex-1 flex flex-col justify-center gap-2 px-4 py-3 min-w-0">
+      <div className="flex-1 flex flex-col justify-start gap-2 px-4 py-3 min-w-0 overflow-hidden">
         {/* Platform Indicator */}
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-          {creator.platforms.map((p) => (
+          {[creator.platform, creator.secondary_platform, creator.tertiary_platform].filter(Boolean).map((p) => (
             <div key={p} className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: platformColor(p) }} />
-              <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: platformColor(p) }}>{p}</span>
+              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: platformColor(p!) }} />
+              <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: platformColor(p!) }}>{p}</span>
             </div>
           ))}
         </div>
@@ -135,22 +133,35 @@ export default function CreatorTile({ image, creator, matchPercent, reason, size
         </div>
 
         {/* Niche */}
-        <SpeechTooltip text={creator.niche}>
-          <p className="text-[#9898b8] text-sm leading-snug line-clamp-1 cursor-default">{creator.niche}</p>
-        </SpeechTooltip>
+        <div className="flex flex-col gap-0.5">
+          <p className="text-[10px] text-[#5a5a7a] font-semibold uppercase tracking-widest mb-0.5">Niche</p>
+          <SpeechTooltip text={creator.niche}>
+            <p className="text-[#9898b8] text-sm leading-snug line-clamp-1 cursor-default">{creator.niche}</p>
+          </SpeechTooltip>
+        </div>
 
-        {/* Andy's reason —> speech bubble */}
-        {reason && (
-          <SpeechTooltip text={reason}>
-            <div className="flex items-start gap-2 cursor-default">
+        {/* Andy's one-liner speech bubble */}
+        {(creator.one_liner ?? reason) && (
+          <SpeechTooltip text={creator.one_liner ?? reason ?? ''}>
+            <div className="flex items-start gap-2 cursor-default mt-1">
               <div className="relative w-6 h-6 flex-shrink-0 mt-0.5">
                 <Image src="/images/Andy.png" alt="Andy" fill className="rounded-full object-cover" />
               </div>
               <div className="relative rounded-xl rounded-tl-sm bg-[#1a1a2e] border border-[#252540] px-3 py-2 min-w-0">
                 <span className="absolute -left-[5px] top-[8px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#252540]" />
                 <span className="absolute -left-[4px] top-[8px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#1a1a2e]" />
-                <p className="text-xs text-[#9898b8] leading-snug line-clamp-2 italic">{reason}</p>
+                <p className="text-xs text-[#9898b8] leading-snug line-clamp-2 italic">{creator.one_liner ?? reason}</p>
               </div>
+            </div>
+          </SpeechTooltip>
+        )}
+
+        {/* Why this creator — top 4 only */}
+        {showWhy && creator.why_fit && (
+          <SpeechTooltip text={creator.why_fit}>
+            <div className="mt-1 rounded-lg bg-[#0e0e20] border border-[#6366f1]/15 px-2.5 py-1.5 cursor-default">
+              <p className="text-[9px] text-[#6366f1] font-semibold uppercase tracking-widest mb-0.5">Why</p>
+              <p className="text-[11px] text-[#a5a5d0] leading-snug line-clamp-2">{creator.why_fit}</p>
             </div>
           </SpeechTooltip>
         )}

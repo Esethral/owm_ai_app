@@ -13,11 +13,17 @@ interface TopCreator {
   name: string;
   age: number;
   handle: string;
-  platforms: string[];
+  platform: string;
+  secondary_platform?: string;
+  tertiary_platform?: string;
   niche: string;
+  secondary_niche?: string;
+  tertiary_niche?: string;
   audience: string;
   matchPercent: number;
   reason?: string;
+  one_liner?: string;
+  why_fit?: string;
 }
 
 // All required props for a single session dashboard card
@@ -132,9 +138,9 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
             <div className="min-w-0">
               <p className="text-base font-semibold text-[#f0f0ff] truncate">{topCreator.name}</p>
               <p className="text-sm text-[#5a5a7a] truncate">{topCreator.handle}</p>
-              {topCreator.reason && (
-                <SpeechTooltip text={topCreator.reason}>
-                  <p className="text-sm text-[#6366f1] italic truncate max-w-[260px] cursor-default">&ldquo;{topCreator.reason}&rdquo;</p>
+              {(topCreator.one_liner ?? topCreator.reason) && (
+                <SpeechTooltip text={topCreator.one_liner ?? topCreator.reason ?? ''}>
+                  <p className="text-sm text-[#6366f1] italic truncate max-w-[260px] cursor-default">&ldquo;{topCreator.one_liner ?? topCreator.reason}&rdquo;</p>
                 </SpeechTooltip>
               )}
             </div>
@@ -224,9 +230,9 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
           onClick={closeAll}
         >
           <div
-            className="relative flex w-full max-w-3xl rounded-3xl overflow-hidden border border-[#1e1e35] bg-[#0f0f1c] shadow-[0_32px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(99,102,241,0.12)]"
+            className="relative flex w-full max-w-5xl rounded-3xl overflow-hidden border border-[#1e1e35] bg-[#0f0f1c] shadow-[0_32px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(99,102,241,0.12)]"
             style={{
-              maxHeight: '85vh',
+              maxHeight: '88vh',
               opacity: creatorModalVisible ? 1 : 0,
               transform: creatorModalVisible ? 'scale(1) translateY(0)' : 'scale(0.94) translateY(16px)',
               transition: 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1)',
@@ -234,7 +240,7 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
             onClick={e => e.stopPropagation()}
           >
             {/* Profile Picture */}
-            <div className="relative flex-shrink-0" style={{ width: '40%' }}>
+            <div className="relative flex-shrink-0" style={{ width: '45%' }}>
               <Image src={topCreator.imagePath} alt={`${topCreator.name} ${topCreator.handle}`} fill className="object-cover object-center" sizes="40vw" />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 60%, #0f0f1c)' }} />
             </div>
@@ -251,20 +257,20 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
               </button>
 
               <div className="flex flex-col gap-1.5">
-                {topCreator.platforms.map((p) => (
+                {[topCreator.platform, topCreator.secondary_platform, topCreator.tertiary_platform].filter(Boolean).map((p) => (
                   <div key={p} className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: platformColor(p) }} />
-                    <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: platformColor(p) }}>
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: platformColor(p!) }} />
+                    <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: platformColor(p!) }}>
                       {p}
                     </span>
                     <a
-                      href={platformUrl(p, topCreator.handle)}
+                      href={platformUrl(p!, topCreator.handle)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-[#5a5a7a] hover:text-[#9898b8] underline underline-offset-2 transition-colors"
                       onClick={e => e.stopPropagation()}
                     >
-                      {platformUrl(p, topCreator.handle).replace('https://www.', '').replace('https://', '')}
+                      {platformUrl(p!, topCreator.handle).replace('https://www.', '').replace('https://', '')}
                     </a>
                   </div>
                 ))}
@@ -278,6 +284,12 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
               <div className="rounded-xl bg-[#13131f] border border-[#1e1e35] px-4 py-3">
                 <p className="text-[10px] text-[#5a5a7a] font-semibold uppercase tracking-widest mb-1">Niche</p>
                 <p className="text-[#c8c8e8] text-sm leading-relaxed">{topCreator.niche}</p>
+                {topCreator.secondary_niche && (
+                  <p className="text-[#9898b8] text-xs leading-relaxed mt-1">{topCreator.secondary_niche}</p>
+                )}
+                {topCreator.tertiary_niche && (
+                  <p className="text-[#9898b8] text-xs leading-relaxed mt-0.5">{topCreator.tertiary_niche}</p>
+                )}
               </div>
 
               <div className="flex items-center gap-6">
@@ -292,10 +304,17 @@ export default function DashboardCard({ id, startup_name, industry, target_audie
                 </div>
               </div>
 
-              {topCreator.reason && (
+              {(topCreator.one_liner ?? topCreator.reason) && (
                 <div className="rounded-xl bg-[#0e0e20] border border-[#6366f1]/20 px-4 py-3">
                   <p className="text-[10px] text-[#6366f1] font-semibold uppercase tracking-widest mb-2">Andy&apos;s take</p>
-                  <p className="text-[#a5a5d0] text-sm leading-relaxed italic">&ldquo;{topCreator.reason}&rdquo;</p>
+                  <p className="text-[#a5a5d0] text-sm leading-relaxed italic">&ldquo;{topCreator.one_liner ?? topCreator.reason}&rdquo;</p>
+                </div>
+              )}
+
+              {topCreator.why_fit && (
+                <div className="rounded-xl bg-[#13131f] border border-[#1e1e35] px-4 py-3">
+                  <p className="text-[10px] text-[#5a5a7a] font-semibold uppercase tracking-widest mb-2">Why this creator</p>
+                  <p className="text-[#c8c8e8] text-sm leading-relaxed">{topCreator.why_fit}</p>
                 </div>
               )}
             </div>

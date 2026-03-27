@@ -43,7 +43,7 @@ export default function SpeechTooltip({ text, children }: Props) {
       <div className="relative w-8 h-8 flex-shrink-0 mt-0.5 rounded-full ring-2 ring-[#6366f1]/60 bg-[#1a1a2e]">
         <Image src="/images/Andy.png" alt="Andy" fill className="rounded-full object-cover" />
       </div>
-      <div className="relative rounded-xl rounded-tl-sm bg-[#1a1a2e] border border-[#252540] shadow-[0_8px_24px_rgba(0,0,0,0.5)] px-4 py-2.5 whitespace-nowrap">
+      <div className="relative rounded-xl rounded-tl-sm bg-[#1a1a2e] border border-[#252540] shadow-[0_8px_24px_rgba(0,0,0,0.5)] px-4 py-2.5" style={{ maxWidth: '320px' }}>
         {/* left tail toward Andy */}
         <span className="absolute -left-[5px] top-[9px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#252540]" />
         <span className="absolute -left-[4px] top-[9px] w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[5px] border-r-[#1a1a2e]" />

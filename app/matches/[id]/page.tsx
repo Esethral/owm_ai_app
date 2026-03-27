@@ -18,8 +18,8 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
       const base = CREATOR_BASES[src];
       const rating = ratings[src];
       const creator = rating
-        ? { ...base, name: rating.name, age: rating.age, handle: rating.handle, platforms: rating.platforms, niche: rating.niche, audience: rating.audience }
-        : { ...base, name: '', age: 0, handle: '', platforms: [], niche: '', audience: '' };
+        ? { ...base, name: rating.name, age: rating.age, handle: rating.handle, platform: rating.platform, ...(rating.secondary_platform ? { secondary_platform: rating.secondary_platform } : {}), ...(rating.tertiary_platform ? { tertiary_platform: rating.tertiary_platform } : {}), niche: rating.niche, ...(rating.secondary_niche ? { secondary_niche: rating.secondary_niche } : {}), ...(rating.tertiary_niche ? { tertiary_niche: rating.tertiary_niche } : {}), audience: rating.audience, one_liner: rating.one_liner, why_fit: rating.why_fit }
+        : { ...base, name: '', age: 0, handle: '', platform: '', niche: '', audience: '' };
       return {
         src,
         creator,
