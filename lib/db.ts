@@ -1,10 +1,31 @@
-import fs from 'fs';
+import Database from 'better-sqlite3';
 import path from 'path';
 
-// Flat JSON database — /tmp is the only writable directory on Vercel serverless functions
+// SQLite database — /tmp is the only writable directory on Vercel serverless functions
 const DB_PATH = process.env.NODE_ENV === 'production'
-  ? '/tmp/data.json'
-  : path.join(process.cwd(), 'data.json');
+  ? '/tmp/data.db'
+  : path.join(process.cwd(), 'data.db');
+
+// Lazy-initialize so the DB isn't opened at build time
+let _db: Database.Database | null = null;
+function db(): Database.Database {
+  if (!_db) {
+    _db = new Database(DB_PATH);
+    _db.exec(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id               TEXT PRIMARY KEY,
+        created_at       TEXT NOT NULL,
+        startup_name     TEXT NOT NULL,
+        industry         TEXT NOT NULL,
+        target_audience  TEXT NOT NULL,
+        creator_requirements TEXT NOT NULL,
+        creators         TEXT NOT NULL,
+        creator_ratings  TEXT NOT NULL
+      )
+    `);
+  }
+  return _db;
+}
 
 // All the fields a creator card will have, populated by Andy
 export type Creator = {
@@ -42,7 +63,7 @@ export type CreatorRating = {
 export type Session = {
   // UUID and timestamp
   id: string;
-  created_at: string; 
+  created_at: string;
   // Input form
   startup_name: string;
   industry: string;
@@ -53,46 +74,51 @@ export type Session = {
   creator_ratings: Record<string, CreatorRating>;
 };
 
-// Main Session object
-type Store = { sessions: Session[] };
+// SQLite rows store creators and creator_ratings as JSON strings
+type SessionRow = Omit<Session, 'creators' | 'creator_ratings'> & {
+  creators: string;
+  creator_ratings: string;
+};
 
-// Check if session file exists and load it
-function read(): Store {
-  if (!fs.existsSync(DB_PATH)) return { sessions: [] };
-  return JSON.parse(fs.readFileSync(DB_PATH, 'utf-8')) as Store;
-}
-
-// Write session data
-function write(store: Store) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(store, null, 2), 'utf-8');
+function rowToSession(row: SessionRow): Session {
+  return {
+    ...row,
+    creators: JSON.parse(row.creators),
+    creator_ratings: JSON.parse(row.creator_ratings),
+  };
 }
 
 // List all sessions, sorted from newest to oldest
 export function listSessions(): Session[] {
-  return read().sessions.slice().sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
+  const rows = db()
+    .prepare('SELECT * FROM sessions ORDER BY created_at DESC')
+    .all() as SessionRow[];
+  return rows.map(rowToSession);
 }
 
 // Finds a single session by UUID
 export function getSession(id: string): Session | null {
-  return read().sessions.find((s) => s.id === id) ?? null;
+  const row = db()
+    .prepare('SELECT * FROM sessions WHERE id = ?')
+    .get(id) as SessionRow | undefined;
+  return row ? rowToSession(row) : null;
 }
 
-// Appends a new session and writes to disk
+// Inserts a new session
 export function createSession(session: Session): Session {
-  const store = read();
-  store.sessions.push(session);
-  write(store);
+  db().prepare(`
+    INSERT INTO sessions (id, created_at, startup_name, industry, target_audience, creator_requirements, creators, creator_ratings)
+    VALUES (@id, @created_at, @startup_name, @industry, @target_audience, @creator_requirements, @creators, @creator_ratings)
+  `).run({
+    ...session,
+    creators: JSON.stringify(session.creators),
+    creator_ratings: JSON.stringify(session.creator_ratings),
+  });
   return session;
 }
 
 // Remove a specific session
 export function deleteSession(id: string): boolean {
-  const store = read();
-  const before = store.sessions.length;
-  store.sessions = store.sessions.filter((s) => s.id !== id);
-  if (store.sessions.length === before) return false;
-  write(store);
-  return true;
+  const result = db().prepare('DELETE FROM sessions WHERE id = ?').run(id);
+  return result.changes > 0;
 }

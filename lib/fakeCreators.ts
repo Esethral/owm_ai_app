@@ -78,7 +78,6 @@ const PLATFORM_COLORS: Record<string, string> = {
   Spotify:    '#1db954',
   LinkedIn:   '#0a66c2',
   Facebook:   '#00b4ff',
-  X:          '#e7e9ea',
   Pinterest:  '#ffdc5d',
   Twitch:     '#9146ff',
 };
@@ -100,7 +99,6 @@ export function platformUrl(platform: string, handle: string): string {
     case 'Podcast':    return `https://open.spotify.com/show/${slug}`;
     case 'Spotify':    return `https://open.spotify.com/show/${slug}`;
     case 'Facebook':   return `https://www.facebook.com/${slug}`;
-    case 'X':          return `https://www.x.com/${slug}`;
     case 'Pinterest':  return `https://www.pinterest.com/${slug}`;
     case 'Twitch':     return `https://www.twitch.tv/${slug}`;
     default:           return '#';
