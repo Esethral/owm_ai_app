@@ -1,15 +1,31 @@
 import Link from 'next/link';
 import { listSessions } from '@/lib/db';
-import DeleteButton from './DeleteButton';
+import { CREATOR_BASES } from '@/lib/fakeCreators';
+import DashboardCard from './DashboardCard';
 
-export default function DashboardPage() {
+// How many cards can be on screen before creating another page
+const PAGE_SIZE = 5;
+
+// Pull list of all sessions and build dashboard cards for each one, passing necessary data as props
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(typeof pageParam === 'string' ? pageParam : '1', 10) || 1);
+
+  // Get list of all sessions and create as many pages as needed
   const sessions = listSessions();
+  const totalPages = Math.ceil(sessions.length / PAGE_SIZE);
+  const currentPage = Math.min(page, Math.max(1, totalPages));
+  const pageSessions = sessions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0f0ff] tracking-tight mb-1">Match sessions</h1>
+          <h1 className="text-2xl font-semibold text-[#f0f0ff] tracking-tight mb-1">Matches</h1>
           <p className="text-sm text-[#5a5a7a]">
             {sessions.length === 0
               ? 'No sessions yet'
@@ -21,49 +37,86 @@ export default function DashboardPage() {
       {sessions.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="space-y-3">
-          {sessions.map((session) => (
-            <div
-              key={session.id}
-              className="group flex items-center justify-between p-5 rounded-xl bg-[#13131f] border border-[#252540] hover:border-[#363660] transition-colors"
-            >
-              <Link href={`/sessions/${session.id}`} className="flex-1 min-w-0 mr-4">
-                <div className="flex items-center gap-3 mb-1.5">
-                  <span className="text-base font-medium text-[#f0f0ff] truncate">
-                    {session.startup_name}
-                  </span>
-                  <span className="shrink-0 text-xs text-[#6366f1] bg-[#6366f1]/10 border border-[#6366f1]/20 px-2 py-0.5 rounded-full">
-                    {session.industry}
-                  </span>
-                </div>
-                <p className="text-sm text-[#5a5a7a] truncate">{session.target_audience}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <span className="text-xs text-[#5a5a7a]">
-                    {session.creators.length} creator match{session.creators.length !== 1 ? 'es' : ''}
-                  </span>
-                  <span className="text-xs text-[#5a5a7a]">
-                    {formatDate(session.created_at)}
-                  </span>
-                </div>
-              </Link>
+        <>
+          <div className="space-y-3">
+            {pageSessions.map((session) => {
+              const ratings = session.creator_ratings ?? {};
+              const topEntry = Object.entries(ratings).sort((a, b) => b[1].matchPercent - a[1].matchPercent)[0];
+              const topImagePath = topEntry?.[0];
+              const topRating = topEntry?.[1];
+              const topBase = topImagePath ? CREATOR_BASES[topImagePath] : null;
 
-              <div className="flex items-center gap-2 shrink-0">
+              // If there is a top creator, build out their creator card
+              const topCreator = topBase && topRating && topImagePath ? {
+                imagePath: topImagePath,
+                name: topRating.name,
+                age: topRating.age,
+                handle: topRating.handle,
+                platforms: topRating.platforms,
+                niche: topRating.niche,
+                audience: topRating.audience,
+                matchPercent: topRating.matchPercent,
+                reason: topRating.reason,
+              } : null;
+
+              return (
+                <DashboardCard
+                  key={session.id}
+                  id={session.id}
+                  startup_name={session.startup_name}
+                  industry={session.industry}
+                  target_audience={session.target_audience}
+                  creator_requirements={session.creator_requirements}
+                  created_at={session.created_at}
+                  topCreator={topCreator}
+                />
+              );
+            })}
+          </div>
+
+          {/* Pagination arrows */}
+          {totalPages > 1 && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+              {currentPage > 1 ? (
                 <Link
-                  href={`/sessions/${session.id}`}
-                  className="px-3 py-1.5 text-xs text-[#9898b8] hover:text-[#f0f0ff] border border-[#252540] hover:border-[#363660] rounded-lg transition-colors"
+                  href={`/dashboard?page=${currentPage - 1}`}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-[#13131f] border border-[#252540] text-[#9898b8] hover:text-[#f0f0ff] hover:border-[#363660] hover:bg-[#1a1a2e] transition-colors shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+                  aria-label="Previous page"
                 >
-                  View
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
                 </Link>
-                <DeleteButton sessionId={session.id} />
-              </div>
+              ) : (
+                <div className="w-10 h-10" />
+              )}
+
+              <span className="text-xs text-[#5a5a7a] tabular-nums">
+                {currentPage} / {totalPages}
+              </span>
+
+              {currentPage < totalPages ? (
+                <Link
+                  href={`/dashboard?page=${currentPage + 1}`}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-[#13131f] border border-[#252540] text-[#9898b8] hover:text-[#f0f0ff] hover:border-[#363660] hover:bg-[#1a1a2e] transition-colors shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+                  aria-label="Next page"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </Link>
+              ) : (
+                <div className="w-10 h-10" />
+              )}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
 }
 
+// State of Dashboard when there are no sessions in the database
 function EmptyState() {
   return (
     <div className="text-center py-24 px-6 border border-dashed border-[#252540] rounded-2xl">
@@ -87,9 +140,4 @@ function EmptyState() {
       </Link>
     </div>
   );
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
