@@ -3,6 +3,7 @@ import { getSession, deleteSession } from '@/lib/db';
 
 type Params = { params: Promise<{ id: string }> };
 
+// Fetches a single session by ID
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
@@ -15,6 +16,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
+// Deletes a single session by ID
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
