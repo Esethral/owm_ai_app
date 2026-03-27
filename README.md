@@ -45,8 +45,6 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-The SQLite database (`data.db`) is created automatically on first run.
-
 ## Project structure
 
 ```
